@@ -257,82 +257,42 @@ using-statement::=('using' '(' resource-acquisition ')' embedded-statement)
 resource-acquisition::= local-variable-declaration | expression
 yield-statement::=('yield' 'return' expression ';') | ('yield' 'break' ';')
 
+//Namespaces
+compilation-unit::=([extern-alias-directives] [using-directives] [global-attributes] [namespace-member-declarations])
+namespace-declaration::=('namespace' qualified-identifier namespace-body [';'])
+qualified-identifier::=identifier [('.' identifier)*]
+namespace-body::=('{' [extern-alias-directives] [using-directivea] [namespace-member-declarations] '}')
+extern-alias-directives::=extern-alias-directive *
+
+extern-alias-directive::=('extern' 'alias' identifier ';')
+using-directives::=using-directive*
+using-directive::=using-alias-directive | using-namespace-directive
+
+using-alias-directive::=('using' identifier '=' namespace-or-type-name ';')
+using-namespace-directive::=('using' namespace-name ';')
+namespace-member-declarations::= namespace-member-declaration *
+
+namespace-member-declaration::=namespace-declaration | type-declaration
+
+type-declaration::=class-declaration | struct-declaration | interface-declaration | enum-declaration
+    | delegate-declaration
+qualified-alias-member::=(identifier '::' identifier [type-argument-list])
+
+//Classes
+class-declaration::=([attributes] [class-modifiers] ['partial'] 'class' identifier [type-parameter-list]
+		[class-base] [type-parameter-constraints-clauses] class-body   [';'])
+class-modifiers::=class-modifier*
+class-modifier::=('new' |'public' |'protected' |'internal' |'private' |'abstract' |'sealed' |'static')
+type-parameter-list::=('<' type-parameters '>')
+type-parameters::= ([attributes] type-parameter) [(','([attributes] type-parameter)) *]
+
+class-base::=(':'   class-type) | (':'   interface-type-list) | (':'   class-type ','   interface-type-list)
+interface-type-list::= interface-type [(',' interface-type)*]
+
+type-parameter-constraints-clauses::=type-parameter-constraints-clause *
+type-parameter-constraints-clause::=('where' type-parameter ':' type-parameter-constraints)
+class-body::=('{' [class-member-declarations] '}')
 /*
-A.1.6	Namespaces
-compilation-unit:
-extern-alias-directivesopt   using-directivesopt  global-attributesopt
-		namespace-member-declarationsopt
-namespace-declaration:
-namespace   qualified-identifier   namespace-body   ;opt
-qualified-identifier:
-identifier
-qualified-identifier   .   identifier
-namespace-body:
-{   extern-alias-directivesopt   using-directivesopt   namespace-member-declarationsopt   }
-extern-alias-directives:
-extern-alias-directive
-extern-alias-directives   extern-alias-directive
-extern-alias-directive:
-extern   alias   identifier   ;
-using-directives:
-using-directive
-using-directives   using-directive
-using-directive:
-using-alias-directive
-using-namespace-directive
-using-alias-directive:
-using   identifier   =   namespace-or-type-name   ;
-using-namespace-directive:
-using   namespace-name   ;
-namespace-member-declarations:
-namespace-member-declaration
-namespace-member-declarations   namespace-member-declaration
-namespace-member-declaration:
-namespace-declaration
-type-declaration
-type-declaration:
-class-declaration
-struct-declaration
-interface-declaration
-enum-declaration
-delegate-declaration
-qualified-alias-member:
-identifier   ::   identifier   type-argument-listopt
-A.1.7	Classes
-class-declaration:
-attributesopt   class-modifiersopt   partialopt   class   identifier   type-parameter-listopt
-		class-baseopt   type-parameter-constraints-clausesopt   class-body   ;opt
-class-modifiers:
-class-modifier
-class-modifiers   class-modifier
-class-modifier:
-new
-public
-protected
-internal
-private
-abstract
-sealed
-static
-type-parameter-list:
-<   type-parameters   >
-type-parameters:
-attributesopt   type-parameter
-type-parameters   ,   attributesopt   type-parameter
-type-parameter:
-identifier
-class-base:
-:   class-type
-:   interface-type-list
-:   class-type   ,   interface-type-list
-interface-type-list:
-interface-type
-interface-type-list   ,   interface-type
-type-parameter-constraints-clauses:
-type-parameter-constraints-clause
-type-parameter-constraints-clauses   type-parameter-constraints-clause
-type-parameter-constraints-clause:
-where   type-parameter   :   type-parameter-constraints
 type-parameter-constraints:
 primary-constraint
 secondary-constraints
@@ -352,8 +312,6 @@ secondary-constraints   ,   interface-type
 secondary-constraints   ,   type-parameter
 constructor-constraint:
 new   (   )
-class-body:
-{   class-member-declarationsopt   }
 class-member-declarations:
 class-member-declaration
 class-member-declarations   class-member-declaration
