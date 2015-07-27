@@ -20,16 +20,27 @@ type-name::= namespace-or-type-name
 namespace-or-type-name::= (identifier   [type-argument-list]) [ ',' (identifier [type-argument-list])]| qualified-alias-member
 
 // types
-type::=value-type | reference-type | type-parameter
-value-type::=struct-type | enum-type
+type::=
+    ( type-name
+    | simple-type
+    | enum-type
+    | reference-type
+    | type-parameter
+    ) ['?']
 
-struct-type::=type-name | simple-type | nullable-type
+
+
+
+
+
+
+
+
 simple-type::= numeric-type | 'bool'
 numeric-type::=integral-type | floating-point-type | 'decimal'
 integral-type::= ('sbyte' | 'byte' | 'short' | 'ushort' | 'int' | 'uint' | 'long' | 'ulong' | 'char')
 floating-point-type::= 'float' | 'double'
-nullable-type::= ( non-nullable-value-type '?' )
-non-nullable-value-type::=type
+
 
 enum-type::= type-name
 reference-type::= class-type | interface-type | array-type| delegate-type
