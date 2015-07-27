@@ -20,21 +20,11 @@ type-name::= namespace-or-type-name
 namespace-or-type-name::= (identifier   [type-argument-list]) [ ',' (identifier [type-argument-list])]| qualified-alias-member
 
 // types
-type::=
-    ( type-name
-    | simple-type
-    | enum-type
-    | reference-type
-    | type-parameter
-    ) ['?']
+type::=( non-array-type | array-type)
 
-
-
-
-
-
-
-
+non-array-type::=( type-name | simple-type | enum-type| type-parameter | class-type | interface-type | delegate-type)
+    ['?']
+array-type::=non-array-type rank-specifiers+
 
 simple-type::= numeric-type | 'bool'
 numeric-type::=integral-type | floating-point-type | 'decimal'
@@ -43,7 +33,7 @@ floating-point-type::= 'float' | 'double'
 
 
 enum-type::= type-name
-reference-type::= class-type | interface-type | array-type| delegate-type
+
 class-type::= type-name | 'object' | 'dynamic' | 'string'
 interface-type::= type-name
 rank-specifiers::= rank-specifier *
@@ -408,8 +398,7 @@ struct-body::=('{' [struct-member-declarations] '}')
 struct-member-declarations::=  struct-member-declaration *
 struct-member-declaration::=constant-declaration |field-declaration |method-declaration|property-declaration |event-declaration|indexer-declaration|operator-declaration|constructor-declaration |static-constructor-declaration |type-declaration
 //	Arrays
-array-type::=(non-array-type   rank-specifiers)
-non-array-type::=type
+
 
 rank-specifier::=('[' [dim-separators] ']')
 dim-separators::= ','*
