@@ -38,47 +38,97 @@ class-type::= type-name | 'object' | 'dynamic' | 'string'
 interface-type::= type-name
 rank-specifiers::= rank-specifier *
 
-dim-separators::= ',' *
-
 delegate-type::= type-name
 type-argument-list::= '<' type-arguments '>'
 type-arguments::= type-argument [( ',' type-argument)*]
 
 type-argument::=type
 type-parameter::=identifier
+predefined-type::= 'bool' | 'byte' | 'char' | 'decimal' | 'double'| 'float' | 'int' | 'long' | 'object' | 'sbyte'
+    | 'short' | 'string' | 'uint' | 'ulong' | 'ushort'
 
 //variables
 variable-reference::=expression
 
+//types
+
 //Expressions
 argument-list::= argument | (',' argument) *
-
 argument::= [argument-name]  argument-value
 argument-name::= identifier ':'
 argument-value::= expression | ('ref'   variable-reference) | ('out'   variable-reference)
-primary-expression::= primary-no-array-creation-expression | array-creation-expression
-primary-no-array-creation-expression::= literal | simple-name| parenthesized-expression | member-access
-    | invocation-expression| element-access| this-access| base-access | post-increment-expression
-    | post-decrement-expression | object-creation-expression | delegate-creation-expression
-    | anonymous-object-creation-expression | typeof-expression |  checked-expression | unchecked-expression
-    | default-value-expression | anonymous-method-expression
+
+primary-expression::= (
+        array-creation-expression
+        | literal
+        | simple-name
+        | parenthesized-expression
+        | predefined-type '.' identifier [type-argument-list]
+        | qualified-alias-member '.' identifier
+        | array-creation-expression '(' [argument-list] ')'
+        | this-access
+        | base-access
+        | object-creation-expression
+        | delegate-creation-expression
+        | anonymous-object-creation-expression
+        | typeof-expression
+        | checked-expression
+        | unchecked-expression
+        | default-value-expression
+        | anonymous-method-expression
+        ) (
+            '.' identifier [type-argument-list]
+            | '--'
+            | '++'
+            | '(' argument-list ')'
+            | '[' argument-list ']'
+            )*
+
+array-creation-expression::= ('new' non-array-type '[' expression-list ']' [rank-specifiers] [array-initializer])
+    | ('new' array-type array-initializer) | ('new' rank-specifier array-initializer)
 
 simple-name::=identifier [type-argument-list]
 parenthesized-expression::= '(' expression ')'
-member-access::= ( primary-expression '.' identifier  [type-argument-list])
-    | ( predefined-type '.' identifier [type-argument-list])
-    | ( qualified-alias-member '.' identifier )
 
-predefined-type::= 'bool' | 'byte' | 'char' | 'decimal' | 'double'| 'float' | 'int' | 'long' | 'object' | 'sbyte'
-    | 'short' | 'string' | 'uint' | 'ulong' | 'ushort'
 
-invocation-expression::= primary-expression '(' [argument-list] ')'
-element-access::= primary-no-array-creation-expression   '[' argument-list ']'
+member-access::= base-primary-expression expression-trail+
+invocation-expression::=base-primary-expression expression-trail+
+post-increment-expression::=base-primary-expression expression-trail+
+post-decrement-expression::=base-primary-expression expression-trail+
+
+private expression-trail::=(
+     '(' [argument-list] ')'
+     '[' (expression-list | expression) ']'
+     | '--'
+     | '++'
+     | '.' identifier [type-argument-list]
+     )
+
+
+private base-primary-expression::= (
+    array-creation-expression
+    | literal
+    | simple-name
+    | parenthesized-expression
+    | predefined-type '.' identifier [type-argument-list]
+    | qualified-alias-member '.' identifier
+    | array-creation-expression '(' [argument-list] ')'
+    | this-access
+    | base-access
+    | object-creation-expression
+    | delegate-creation-expression
+    | anonymous-object-creation-expression
+    | typeof-expression
+    | checked-expression
+    | unchecked-expression
+    | default-value-expression
+    | anonymous-method-expression)
+
+
+
 this-access::='this'
 base-access::=( 'base' '.' identifier) | ( 'base' '['  argument-list ']' )
 
-post-increment-expression::= primary-expression '++'
-post-decrement-expression::= primary-expression '--'
 
 object-creation-expression::= ('new' type '('  [argument-list] ')' [object-or-collection-initializer])
     | ('new' type  object-or-collection-initializer)
@@ -92,8 +142,6 @@ collection-initializer::= ('{' element-initializer-list '}') | ('{' element-init
 element-initializer-list::= element-initializer ( ','  element-initializer) *
 element-initializer::= non-assignment-expression | ('{'  expression-list '}')
 expression-list::=expression ( ','  expression) *
-array-creation-expression::= ('new' non-array-type '[' expression-list ']' [rank-specifiers] [array-initializer])
-    | ('new' array-type array-initializer) | ('new' rank-specifier array-initializer)
 
 delegate-creation-expression::= ('new' delegate-type '(' expression ')')
 
