@@ -1,5 +1,6 @@
 out/
 .DS_Store
 .idea/workspace.xml
+.idea/dictionaries/josh.xml
 src/test.bnf
 [Ww]orkspace.xml

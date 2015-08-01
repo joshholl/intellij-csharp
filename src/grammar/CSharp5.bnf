@@ -123,8 +123,8 @@ typeof-expression::=
     | 'typeof' '(' 'void' ')'
 
 
-generic-dimension-specifier::='<' [commas] '>'
-commas::= ',' *
+generic-dimension-specifier::='<' [(',')*] '>'
+
 
 checked-expression::= 'checked' '(' expression ')'
 unchecked-expression::= 'unchecked' '(' expression ')'
@@ -136,61 +136,34 @@ unary-expression::= primary-expression | ( '+' unary-expression ) | ( '-'   unar
 pre-increment-expression::= '++' unary-expression
 pre-decrement-expression::= '--'   unary-expression
 cast-expression::='(' type ')' unary-expression
-
-additive-expression::=factor add-expression*
-
-left add-expression::=('+'|'-') | factor
-left mul-expression::=('*'|'/'|'%') add-expression
-private factor::=unary-expression mul-expression *
-
 right-shift::='>>'
+right-shift-assignment::='>>='
+conditional-expression::=comparative-expression
+    | (comparative-expression '?' expression ':' expression)
 
+comparative-expression::=
+    (unary-expression
+        (
+            (
+                ('*'|'%'|'/')
+                | ('-'|'+')
+                | ('<<' |right-shift)
+                | ('<' | '>' | '<=' | '>=')
+                | ('==' | '!=')
+                | '&'
+                | '^'
+                | '|'
+                | '&&'
+                | '||'
+                | '??'
 
-conditional-expression::=null-coalescing-expression
-    | (null-coalescing-expression '?' expression ':' expression)
-
-
-null-coalescing-expression::=
-    conditional-or-expression (('??') (conditional-or-expression|null-coalescing-expression))+
-    | conditional-or-expression
-
-
-conditional-or-expression::=
-    conditional-and-expression (('||' (conditional-and-expression|conditional-or-expression))+)
-    | conditional-and-expression
-
-conditional-and-expression::=
-    inclusive-or-expression (('&&') (inclusive-or-expression|conditional-and-expression))
-    | inclusive-or-expression
-
-inclusive-or-expression::=
-    exclusive-or-expression (('|') (exclusive-or-expression | inclusive-or-expression))+
-    |exclusive-or-expression
-
-exclusive-or-expression::=
-    and-expression ('^' (and-expression|exclusive-or-expression))
-    | and-expression
-
-and-expression::=
-    equality-expression ('&' (equality-expression|and-expression))+
-    | equality-expression
-
-equality-expression::=relational-expression (('=='|'!=') (equality-expression|relational-expression))+
-    | relational-expression
-
-relational-expression::=
-    (shift-expression (('<' | '>' | '<=' | '>=') (shift-expression| relational-expression))+)
-    | (shift-expression (('is' | 'as') (type|shift-expression|relational-expression))+)
-    | shift-expression
-
-shift-expression::=(additive-expression (('<<'| right-shift)(shift-expression|additive-expression))+)
-    | additive-expression
-
-additive-expression::=(multiplicative-expression (('-'|'+') (additive-expression| multiplicative-expression))+)
-    | multiplicative-expression
-
-multiplicative-expression::=(unary-expression (('*'|'%'|'/') (multiplicative-expression | unary-expression))*)
+            )
+            (comparative-expression | unary-expression)
+        )+
+    )
+    | (('is'|'as') (type|unary-expression))+
     | unary-expression
+
 
 lambda-expression::=anonymous-function-signature '=>' anonymous-function-body
 anonymous-method-expression::= 'delegate' [explicit-anonymous-function-signature] block
@@ -230,7 +203,7 @@ group-clause::='group' expression 'by' expression
 query-continuation::='into'   identifier   query-body
 assignment::= unary-expression | assignment-operator | expression
 assignment-operator::= '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' |'^=' |'<<=' | right-shift-assignment
-expression::=non-assignment-expression | assignment
+expression::=non-assignment-expression | (unary-expression | assignment-operator expression)
 non-assignment-expression::=conditional-expression | lambda-expression| query-expression
 constant-expression::=expression
 boolean-expression::=expression
@@ -255,9 +228,7 @@ local-variable-declarators::= local-variable-declarator [(',' local-variable-dec
 local-variable-declarator::=identifier| ( identifier '=' local-variable-initializer )
 local-variable-initializer::=expression | array-initializer
 local-constant-declaration::=('const' type constant-declarators)
-constant-declarators::= constant-declarator [(',' constant-declarator)*]
 
-constant-declarator::=identifier '=' constant-expression
 expression-statement::= (statement-expression ';' )
 statement-expression::= invocation-expression | object-creation-expression | assignment | post-increment-expression
     post-decrement-expression | pre-increment-expression | pre-decrement-expression
@@ -341,8 +312,11 @@ type-parameter-constraints::=primary-constraint |secondary-constraints | constru
     | (secondary-constraints','   constructor-constraint )
     | (primary-constraint ',' secondary-constraints ',' constructor-constraint)
 primary-constraint::=class-type | 'class' | 'struct'
-secondary-constraints::=  interface-type | type-parameter | (secondary-constraints ',' interface-type)
-    | (secondary-constraints ',' type-parameter)
+secondary-constraints::=
+    ((interface-type | type-parameter) (',' (interface-type | type-parameter |secondary-constraints))+)
+    | interface-type | type-parameter
+
+
 constructor-constraint::='new' '(' ')'
 class-member-declarations::= class-member-declaration *
 class-member-declaration::=constant-declaration |field-declaration |method-declaration |property-declaration
@@ -353,6 +327,7 @@ constant-modifiers::=constant-modifier *
 constant-modifier::= 'new' | 'public' | 'protected' | 'internal' | 'private'
 constant-declarators::=constant-declarator   [(',' constant-declarator)*]
 constant-declarator::=identifier '=' constant-expression
+
 field-declaration::=([attributes] [field-modifiers] type variable-declarators ';')
 field-modifiers::= field-modifier *
 field-modifier::= 'new' | 'public' | 'protected' | 'internal' | 'private' | 'static' | 'readonly' | 'volatile'
@@ -456,8 +431,9 @@ interface-declaration::=([attributes] [interface-modifiers] [partial] 'interface
 interface-modifiers::= interface-modifier*
 interface-modifier::=('new' | 'public' | 'protected' | 'internal' | 'private')
 variant-type-parameter-list::='<' variant-type-parameters   '>'
-variant-type-parameters::=([attributes] [variance-annotation]  type-parameter)
-    | (variant-type-parameters ',' [attributes] [variance-annotation] type-parameter)
+variant-type-parameters::= variant-type-parameter [(',' variant-type-parameter)*]
+variant-type-parameter::=([attributes] [variance-annotation]  type-parameter)
+
 variance-annotation::='in' | 'out'
 interface-base::=(':' interface-type-list)
 interface-body::=('{' [interface-member-declarations] '}')
