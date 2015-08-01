@@ -137,57 +137,61 @@ pre-increment-expression::= '++' unary-expression
 pre-decrement-expression::= '--'   unary-expression
 cast-expression::='(' type ')' unary-expression
 
-
 additive-expression::=factor add-expression*
 
 left add-expression::=('+'|'-') | factor
 left mul-expression::=('*'|'/'|'%') add-expression
 private factor::=unary-expression mul-expression *
 
-/*
-
-// private rules to define operators with the same priority
-private unary_group ::= unary_plus_expr | unary_min_expr
-private mul_group ::= mul_expr | div_expr
-private add_group ::= plus_expr | minus_expr
-private primary_group ::= simple_ref_expr | literal_expr | paren_expr
-
-// public rules for each expression
-assign_expr ::= expr '=' expr { rightAssociative=true }
-unary_min_expr ::= '-' expr
-unary_plus_expr ::= '+' expr
-div_expr ::= expr '/' expr
-mul_expr ::= expr '*' expr
-minus_expr ::= expr '-' expr
-plus_expr ::= expr '+' expr
-exp_expr ::= expr ('^' expr) + // N-ary variant, the "(<op> expr ) +" syntax is mandatory.
-paren_expr ::= '(' expr ')'
-
- */
+right-shift::='>>'
 
 
+conditional-expression::=null-coalescing-expression
+    | (null-coalescing-expression '?' expression ':' expression)
 
-shift-expression::=additive-expression | (shift-expression '<<' additive-expression )
-    | (shift-expression right-shift   additive-expression )
 
-relational-expression::= shift-expression | (relational-expression '<'  shift-expression)
-    | (relational-expression '>' shift-expression) | (relational-expression '<=' shift-expression)
-    | (relational-expression '>=' shift-expression) | (relational-expression 'is' type)
-    | (relational-expression 'as' type)
+null-coalescing-expression::=
+    conditional-or-expression (('??') (conditional-or-expression|null-coalescing-expression))+
+    | conditional-or-expression
 
-equality-expression::=relational-expression | (equality-expression '==' relational-expression)
-    | (equality-expression '!=' relational-expression)
 
-and-expression::=equality-expression | (and-expression '&' equality-expression)
+conditional-or-expression::=
+    conditional-and-expression (('||' (conditional-and-expression|conditional-or-expression))+)
+    | conditional-and-expression
 
-exclusive-or-expression::=and-expression | (exclusive-or-expression '^' and-expression)
+conditional-and-expression::=
+    inclusive-or-expression (('&&') (inclusive-or-expression|conditional-and-expression))
+    | inclusive-or-expression
 
-inclusive-or-expression::=exclusive-or-expression | (inclusive-or-expression '|' exclusive-or-expression )
-conditional-and-expression::=inclusive-or-expression | (conditional-and-expression '&&' inclusive-or-expression)
+inclusive-or-expression::=
+    exclusive-or-expression (('|') (exclusive-or-expression | inclusive-or-expression))+
+    |exclusive-or-expression
 
-conditional-or-expression::= conditional-and-expression | (conditional-or-expression '||'   conditional-and-expression)
-null-coalescing-expression::=conditional-or-expression | (conditional-or-expression '??' null-coalescing-expression)
-conditional-expression::=null-coalescing-expression | (null-coalescing-expression '?' expression ':' expression)
+exclusive-or-expression::=
+    and-expression ('^' (and-expression|exclusive-or-expression))
+    | and-expression
+
+and-expression::=
+    equality-expression ('&' (equality-expression|and-expression))+
+    | equality-expression
+
+equality-expression::=relational-expression (('=='|'!=') (equality-expression|relational-expression))+
+    | relational-expression
+
+relational-expression::=
+    (shift-expression (('<' | '>' | '<=' | '>=') (shift-expression| relational-expression))+)
+    | (shift-expression (('is' | 'as') (type|shift-expression|relational-expression))+)
+    | shift-expression
+
+shift-expression::=(additive-expression (('<<'| right-shift)(shift-expression|additive-expression))+)
+    | additive-expression
+
+additive-expression::=(multiplicative-expression (('-'|'+') (additive-expression| multiplicative-expression))+)
+    | multiplicative-expression
+
+multiplicative-expression::=(unary-expression (('*'|'%'|'/') (multiplicative-expression | unary-expression))*)
+    | unary-expression
+
 lambda-expression::=anonymous-function-signature '=>' anonymous-function-body
 anonymous-method-expression::= 'delegate' [explicit-anonymous-function-signature] block
 anonymous-function-signature::= explicit-anonymous-function-signature | implicit-anonymous-function-signature
