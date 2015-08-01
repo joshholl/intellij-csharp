@@ -1,0 +1,28 @@
+// This is a generated file. Not intended for manual editing.
+package com.github.joshholl.intellij.csharp.lang.psi;
+
+import java.util.List;
+import org.jetbrains.annotations.*;
+import com.intellij.psi.PsiElement;
+
+public interface CSharpClassDeclaration extends PsiElement {
+
+  @Nullable
+  CSharpAttributes getAttributes();
+
+  @Nullable
+  CSharpClassBase getClassBase();
+
+  @NotNull
+  CSharpClassBody getClassBody();
+
+  @Nullable
+  CSharpClassModifiers getClassModifiers();
+
+  @Nullable
+  CSharpTypeParameterConstraintsClauses getTypeParameterConstraintsClauses();
+
+  @Nullable
+  CSharpTypeParameterList getTypeParameterList();
+
+}
